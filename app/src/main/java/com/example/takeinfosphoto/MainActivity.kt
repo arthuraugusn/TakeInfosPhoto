@@ -1,7 +1,9 @@
 package com.example.takeinfosphoto
 
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -32,9 +34,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import com.example.takeinfosphoto.ui.theme.TakeInfosPhotoTheme
 
@@ -65,7 +67,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
             onResult = { uriList ->
                 selectedImages = uriList
             })
-
+var context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -94,7 +96,8 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
                         .padding(16.dp, 8.dp)
                         .size(100.dp)
                         .clickable {
-                            Log.i("ds3m", "Greeting: ${uri.query}")
+                            val imageName = getImageDisplayNameFromUri(context = context, uri = uri)
+                            Log.i("ds3m", "Greeting: ${imageName}")
                         }
                 )
             }
@@ -103,6 +106,18 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 
 
 }
+
+private fun getImageDisplayNameFromUri(context: Context, uri: Uri): String? {
+    val contentResolver = context.contentResolver
+    val cursor = contentResolver.query(uri, null, null, null, null)
+    cursor?.use {
+        if (it.moveToFirst()) {
+            return it.getString(it.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+        }
+    }
+    return null
+}
+
 
 @Preview(showBackground = true)
 @Composable
